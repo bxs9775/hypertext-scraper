@@ -10,8 +10,8 @@ async function main(){
         console.error("base url not provided");
         process.exit(1);
     }
-    if(!argv.base_url){
-        console.error("start url not provided");
+    if(!argv.start_page){
+        console.error("start page not provided");
         process.exit(1);
     }
     if(!argv.name){
@@ -20,7 +20,7 @@ async function main(){
     }
 
     // initialize and start scraper
-    let scraper = new Scraper(argv.base_url,argv.start_url,argv.name);
+    let scraper = new Scraper(argv.base_url,argv.start_page,argv.name);
     await scraper.run()
 
     // get report
