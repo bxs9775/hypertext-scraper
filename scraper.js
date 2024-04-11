@@ -1,7 +1,7 @@
 // imports
 const axios = require("axios");
 const cheerio = require("cheerio");
-const {DirectedGraph} = require("@datastructures-js/graph");
+const CustomDirectedGraph = require("./CustomDirectedGraph");
 
 let whitespace_regex = /\s\s+/g
 
@@ -14,7 +14,7 @@ class Scraper{
 
         this.name = name;
 
-        this.graph = new DirectedGraph();
+        this.graph = new CustomDirectedGraph();
         this.text_json = {};
     }
 
@@ -85,12 +85,15 @@ class Scraper{
             vertices: Array.from(this.graph._vertices.keys()),
             edges: edges
         };
+
+        let paths = this.graph.findDfsPaths(this.start_page);
         return {
             details: {
                 work: this.name,
                 word_count: words.length,
                 unique_word_count: unique_words.size,
-                graph: graph_json
+                graph: graph_json,
+                paths: paths
             },
             json: this.text_json,
             text
