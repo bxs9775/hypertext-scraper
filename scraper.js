@@ -18,15 +18,7 @@ class Scraper{
         this.text_json = {};
     }
 
-    async build_vertex(page_name){
-        console.log(`Scraping page - ${page_name}`);
-
-        // check if vertex already exists
-        if(this.graph.hasVertex(page_name)){
-            console.log(`Page "${page_name}" already scraped`);
-            return;
-        }
-        // fetch page
+    async scrape_page(page_name){
         let page = await axios.get(this.base_url+page_name);
 
         // set up DOM
@@ -45,18 +37,50 @@ class Scraper{
         let text = text_arr
         console.log(text);
 
+        let frames = [...$('frame').map((i,link) => $(link).attr("src"))];
+        let links = [...$('a, area[href]').map((i,link) => $(link).attr("href"))];
+        
+        for(let frame of frames){
+            let frame_data = await this.scrape_page(frame);
+            text = text + frame_data.text;
+
+            frames.push(...frame_data.frames);
+            links.push(...frame_data.links);
+        }
+
+        return {
+            text,
+            frames,
+            links
+        }
+    }
+
+    async build_vertex(page_name){
+        console.log(`Scraping page - ${page_name}`);
+
+        // check if vertex already exists
+        if(this.graph.hasVertex(page_name)){
+            console.log(`Page "${page_name}" already scraped`);
+            return;
+        }
+
+        // scrape text
+        let scraped_data =  await this.scrape_page(page_name);
+        let {text, frames, links} = scraped_data;
+
         // add vertex to graph
         this.graph.addVertex(page_name,true)
         this.text_json[page_name] = text;
 
         // add links
-        let links = [...$('a, area[href]').map((i,link) => $(link).attr("href")),...$('frame').map((i,link) => $(link).attr("src"))];
+        console.log("Links: ",links);
         for(let link of links){
             if(!(link.startsWith("https://") || link.startsWith("http://") || link.startsWith("mailto:"))){
                 await this.build_vertex(link);
                 this.graph.addEdge(page_name,link)
             }
         }
+        
     }
 
     async run(){
