@@ -25,16 +25,17 @@ class Scraper{
         let $ = cheerio.load(page.data);
 
         // scrape text
-        let text_arr = $('p, td').toArray().map((elem) => {
+        /*
+        let text_arr = $('body > *').toArray().map((elem) => {
             let txt = $(elem).text().trim().replace(whitespace_regex,' ');
             return txt
         }).filter(txt => txt && txt.length > 0)
-        console.log(text_arr)
-        if(!text_arr || text_arr.length == 0){
-            console.log($('body').text());
-            text_arr = [$('body').text().trim().replace(whitespace_regex,' ')]
-        }
-        let text = text_arr
+        */
+        let text = $('body').text()
+            .trim()
+            .replace(whitespace_regex,' ');
+        //console.log(text_arr)
+        //let text = text_arr//.join(' ')
         console.log(text);
 
         let frames = [...$('frame').map((i,link) => $(link).attr("src"))];
@@ -42,7 +43,7 @@ class Scraper{
         
         for(let frame of frames){
             let frame_data = await this.scrape_page(frame);
-            text = text + frame_data.text;
+            text = text + frame_data.text
 
             frames.push(...frame_data.frames);
             links.push(...frame_data.links);
