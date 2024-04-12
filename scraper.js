@@ -111,6 +111,7 @@ class Scraper{
         };
 
         let paths = this.graph.findDfsPaths(this.start_page);
+        paths = paths.filter(path => path.length > 3);
         return {
             details: {
                 work: this.name,
