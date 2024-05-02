@@ -25,17 +25,9 @@ class Scraper{
         let $ = cheerio.load(page.data);
 
         // scrape text
-        /*
-        let text_arr = $('body > *').toArray().map((elem) => {
-            let txt = $(elem).text().trim().replace(whitespace_regex,' ');
-            return txt
-        }).filter(txt => txt && txt.length > 0)
-        */
         let text = $('body').text()
             .trim()
             .replace(whitespace_regex,' ');
-        //console.log(text_arr)
-        //let text = text_arr//.join(' ')
         console.log(text);
 
         let frames = [...$('frame').map((i,link) => $(link).attr("src"))];
@@ -113,13 +105,19 @@ class Scraper{
 
         let paths = this.graph.findDfsPaths(this.start_page);
         paths = paths.filter(path => path.length > 3);
+        let path_word_lengths = paths.map(path => path.reduce((total,page) => total += this.text_json[page].split(' ').length,0));
+        
         return {
             details: {
                 work: this.name,
                 word_count: words.length,
                 unique_word_count: unique_words.size,
                 graph: graph_json,
-                paths: paths
+                paths: paths,
+                path_words_stats: {
+                    max: Math.max(...path_word_lengths),
+                    min: Math.min(...path_word_lengths)
+                }
             },
             json: this.text_json,
             text
