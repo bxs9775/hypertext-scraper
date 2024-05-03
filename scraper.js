@@ -77,7 +77,13 @@ class Scraper{
     }
 
     async run(){
+        console.log("Scrapping site")
         await this.build_vertex(this.start_page);
+
+        console.log("Getting narrative paths")
+        this.paths = this.paths.filter(path => path.length > 3);
+        this.path_word_lengths = this.paths.map(path => path.reduce((total,page) => total += this.text_json[page].split(' ').length,0));
+        
         
         console.log(" --- Scrapping complete --- ");
     }
@@ -103,20 +109,16 @@ class Scraper{
             edges: edges
         };
 
-        let paths = this.graph.findDfsPaths(this.start_page);
-        paths = paths.filter(path => path.length > 3);
-        let path_word_lengths = paths.map(path => path.reduce((total,page) => total += this.text_json[page].split(' ').length,0));
-        
         return {
             details: {
                 work: this.name,
                 word_count: words.length,
                 unique_word_count: unique_words.size,
                 graph: graph_json,
-                paths: paths,
+                paths: this.paths,
                 path_words_stats: {
-                    max: Math.max(...path_word_lengths),
-                    min: Math.min(...path_word_lengths)
+                    max: Math.max(...this.path_word_lengths),
+                    min: Math.min(...this.path_word_lengths)
                 }
             },
             json: this.text_json,
