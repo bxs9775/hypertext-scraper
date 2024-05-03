@@ -54,7 +54,7 @@ class Scraper{
         // check if vertex already exists
         if(this.graph.hasVertex(page_name)){
             console.log(`Page "${page_name}" already scraped`);
-            return;
+            return [[page_name]];
         }
 
         // scrape text
@@ -75,13 +75,11 @@ class Scraper{
                 this.graph.addEdge(page_name,link)
                 if(next_paths){
                     local_paths.push(...next_paths.map(path => [page_name, ...path]));
-                } else {
-                    local_paths.push([page_name,link])
-                }
+                } 
             }
         }
         if(local_paths.length == 0){
-            local_paths = local_paths;
+            local_paths.push([page_name]);
         }
         //console.log(`Paths for ${page_name} - ${local_paths}`);
         return local_paths;
@@ -90,8 +88,13 @@ class Scraper{
     async run(){
         console.log("Scrapping site")
         this.paths = await this.build_vertex(this.start_page);
-        
+        // Remove duplicates method from 
+        // https://www.geeksforgeeks.org/how-to-remove-duplicate-elements-from-javascript-array/#method-1-using-javascript-filter-method
+        this.paths = this.paths.map(path => path.filter((item,index) => path.indexOf(item) === index));
+        // filter out paths 3 pages or less
         this.paths = this.paths.filter(path => path.length > 3);
+        console.log(this.paths)
+        // calculate the word lengths
         this.path_word_lengths = this.paths.map(path => path.reduce((total,page) => total += this.text_json[page].split(' ').length,0));
 
         console.log(" --- Scrapping complete --- ");
