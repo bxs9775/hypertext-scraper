@@ -67,24 +67,33 @@ class Scraper{
 
         // add links
         console.log("Links: ",links);
+        let local_paths = [];
         for(let link of links){
             if(!(link.startsWith("https://") || link.startsWith("http://") || link.startsWith("mailto:"))){
-                await this.build_vertex(link);
+                let next_paths = await this.build_vertex(link);
+                //console.log("Next paths: ",next_paths);
                 this.graph.addEdge(page_name,link)
+                if(next_paths){
+                    local_paths.push(...next_paths.map(path => [page_name, ...path]));
+                } else {
+                    local_paths.push([page_name,link])
+                }
             }
         }
-        
+        if(local_paths.length == 0){
+            local_paths = local_paths;
+        }
+        //console.log(`Paths for ${page_name} - ${local_paths}`);
+        return local_paths;
     }
 
     async run(){
         console.log("Scrapping site")
-        await this.build_vertex(this.start_page);
-
-        console.log("Getting narrative paths")
+        this.paths = await this.build_vertex(this.start_page);
+        
         this.paths = this.paths.filter(path => path.length > 3);
         this.path_word_lengths = this.paths.map(path => path.reduce((total,page) => total += this.text_json[page].split(' ').length,0));
-        
-        
+
         console.log(" --- Scrapping complete --- ");
     }
 
